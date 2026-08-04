@@ -1,12 +1,6 @@
 import AlarmKit
 import Foundation
-import SwiftUI
-
-struct BoxbellAlarmMetadata: AlarmMetadata {
-    let sessionID: String
-    let eventKind: String
-    let round: Int
-}
+import UserNotifications
 
 struct BoxbellScheduledAlarm: Codable, Hashable {
     enum Kind: String, Codable {
@@ -33,6 +27,7 @@ struct BoxbellScheduledAlarm: Codable, Hashable {
 @MainActor
 final class BoxbellAlarmScheduler {
     private let storedAlarmIDsKey = "boxbell.scheduledAlarmIDs"
+    private let notificationIdentifierPrefix = "boxbell.round.signal."
     private let maxInfiniteRoundsToSchedule = 12
     private var schedulingTask: Task<Void, Never>?
 
@@ -151,20 +146,25 @@ final class BoxbellAlarmScheduler {
         guard !events.isEmpty, !Task.isCancelled else { return }
 
         do {
-            let authorization = try await AlarmManager.shared.requestAuthorization()
-            guard authorization == .authorized, !Task.isCancelled else { return }
+            let center = UNUserNotificationCenter.current()
+            let granted = try await center.requestAuthorization(options: [.alert, .sound])
+            guard granted, !Task.isCancelled else { return }
         } catch {
             return
         }
 
-        var scheduledIDs: [UUID] = []
+        var scheduledIDs: [String] = []
         for event in events {
             guard !Task.isCancelled else { break }
 
-            let id = UUID()
+            let id = "\(notificationIdentifierPrefix)\(sessionID).\(UUID().uuidString)"
             do {
-                let configuration = alarmConfiguration(for: event, sessionID: sessionID, languageCode: languageCode)
-                _ = try await AlarmManager.shared.schedule(id: id, configuration: configuration)
+                let request = notificationRequest(
+                    identifier: id,
+                    for: event,
+                    languageCode: languageCode
+                )
+                try await UNUserNotificationCenter.current().add(request)
                 scheduledIDs.append(id)
                 storeAlarmIDs(scheduledIDs)
             } catch {
@@ -173,37 +173,19 @@ final class BoxbellAlarmScheduler {
         }
     }
 
-    private func alarmConfiguration(
+    private func notificationRequest(
+        identifier: String,
         for event: BoxbellScheduledAlarm,
-        sessionID: String,
         languageCode: String
-    ) -> AlarmManager.AlarmConfiguration<BoxbellAlarmMetadata> {
-        let title = localizedTitle(for: event, languageCode: languageCode)
-        let stopText = languageCode == "en" ? "Stop" : "끄기"
-        let stopButton = AlarmButton(
-            text: LocalizedStringResource(stringLiteral: stopText),
-            textColor: .white,
-            systemImageName: "stop.circle.fill"
-        )
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: title),
-            stopButton: stopButton
-        )
-        let attributes = AlarmAttributes(
-            presentation: AlarmPresentation(alert: alert),
-            metadata: BoxbellAlarmMetadata(
-                sessionID: sessionID,
-                eventKind: event.kind.rawValue,
-                round: event.round
-            ),
-            tintColor: Color.red
-        )
+    ) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = localizedTitle(for: event, languageCode: languageCode)
+        content.sound = UNNotificationSound(named: UNNotificationSoundName(event.kind.soundName))
+        content.interruptionLevel = .timeSensitive
 
-        return AlarmManager.AlarmConfiguration.alarm(
-            schedule: .fixed(event.fireDate),
-            attributes: attributes,
-            sound: .named(event.kind.soundName)
-        )
+        let interval = max(1, event.fireDate.timeIntervalSinceNow)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
+        return UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
     }
 
     private func localizedTitle(for event: BoxbellScheduledAlarm, languageCode: String) -> String {
@@ -233,23 +215,24 @@ final class BoxbellAlarmScheduler {
     }
 
     private func cancelStoredAlarms() async {
-        let manager = AlarmManager.shared
         let ids = storedAlarmIDs()
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ids)
+        center.removeDeliveredNotifications(withIdentifiers: ids)
 
-        for id in ids {
-            try? manager.cancel(id: id)
-            try? manager.stop(id: id)
+        for id in ids.compactMap(UUID.init(uuidString:)) {
+            try? AlarmManager.shared.cancel(id: id)
+            try? AlarmManager.shared.stop(id: id)
         }
 
         storeAlarmIDs([])
     }
 
-    private func storedAlarmIDs() -> [UUID] {
-        let strings = UserDefaults.standard.stringArray(forKey: storedAlarmIDsKey) ?? []
-        return strings.compactMap(UUID.init(uuidString:))
+    private func storedAlarmIDs() -> [String] {
+        UserDefaults.standard.stringArray(forKey: storedAlarmIDsKey) ?? []
     }
 
-    private func storeAlarmIDs(_ ids: [UUID]) {
-        UserDefaults.standard.set(ids.map(\.uuidString), forKey: storedAlarmIDsKey)
+    private func storeAlarmIDs(_ ids: [String]) {
+        UserDefaults.standard.set(ids, forKey: storedAlarmIDsKey)
     }
 }

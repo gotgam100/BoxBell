@@ -95,27 +95,13 @@ struct ContentView: View {
         ZStack {
             Circle()
                 .inset(by: 6)
-                .stroke(.white.opacity(0.12), lineWidth: 12)
-                .background(
-                    Circle()
-                        .inset(by: 6)
-                        .fill(.black.opacity(0.2))
-                )
-
-            Circle()
-                .inset(by: 6)
-                .trim(from: 0, to: timer.progress)
-                .stroke(
-                    timerRingColor,
-                    style: StrokeStyle(lineWidth: 12, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 0.25), value: timer.progress)
+                .fill(.black.opacity(0.2))
 
             Image("TimeBell")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 250, height: 250)
+                .frame(width: 238, height: 238)
+                .offset(y: 1)
                 .scaleEffect(isBellPressed ? 0.93 : 1)
                 .animation(.spring(response: 0.14, dampingFraction: 0.58), value: isBellPressed)
                 .contentShape(Circle())
@@ -132,14 +118,30 @@ struct ContentView: View {
                 )
             .accessibilityLabel(localizer.text("button.start"))
 
+            Circle()
+                .inset(by: 1)
+                .stroke(.white.opacity(0.18), lineWidth: 10)
+                .allowsHitTesting(false)
+
+            Circle()
+                .inset(by: 1)
+                .trim(from: 0, to: timer.progress)
+                .stroke(
+                    timerRingColor,
+                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 0.25), value: timer.progress)
+                .allowsHitTesting(false)
         }
-        .frame(maxWidth: 296)
-        .aspectRatio(1, contentMode: .fit)
+        .frame(width: 260, height: 260)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 10)
     }
 
     private var digitalTimer: some View {
         Text(timer.timeText)
-            .font(.custom("DS-Digital-Bold", size: 108))
+            .font(.custom("DS-Digital-Bold", size: 180))
             .monospacedDigit()
             .minimumScaleFactor(0.62)
             .foregroundStyle(digitalTimerColor)
@@ -286,7 +288,7 @@ struct ContentView: View {
             return .green
         }
 
-        return isWarningFlashActive ? .white : .red
+        return isWarningFlashActive ? .white : Color(red: 0.9, green: 0.02, blue: 0.015)
     }
 
     private var digitalTimerColor: Color {
