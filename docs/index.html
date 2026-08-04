@@ -3,262 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BoxBell Terms & Policies</title>
-  <meta name="description" content="BoxBell privacy policy, terms of use, and developer apps.">
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #101113;
-      --panel: #191b1f;
-      --text: #f6f2ee;
-      --muted: #b8b1aa;
-      --line: #34373d;
-      --accent: #e5382f;
-      --accent-soft: rgba(229, 56, 47, 0.16);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.65;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, rgba(229, 56, 47, 0.16), transparent 28rem),
-        linear-gradient(180deg, #151619 0%, var(--bg) 34rem);
-    }
-
-    a {
-      color: inherit;
-      text-decoration-color: rgba(229, 56, 47, 0.6);
-      text-underline-offset: 0.2em;
-    }
-
-    .wrap {
-      width: min(940px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 32px 0 64px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
-      align-items: flex-start;
-      padding: 24px 0 36px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(34px, 7vw, 72px);
-      line-height: 0.95;
-      letter-spacing: 0;
-    }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: 28px;
-      line-height: 1.2;
-    }
-
-    h3 {
-      margin: 28px 0 8px;
-      font-size: 18px;
-    }
-
-    p, ul {
-      margin: 0 0 14px;
-      color: var(--muted);
-    }
-
-    ul {
-      padding-left: 22px;
-    }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    nav a, .app-link {
-      display: inline-flex;
-      align-items: center;
-      min-height: 40px;
-      padding: 8px 13px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.04);
-      text-decoration: none;
-    }
-
-    section {
-      padding: 36px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .summary {
-      max-width: 650px;
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 18px;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .pill {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: #ffbab5;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .app-link {
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .app-link span {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    footer {
-      padding-top: 28px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    @media (max-width: 620px) {
-      header {
-        display: block;
-      }
-
-      nav {
-        justify-content: flex-start;
-        margin-top: 22px;
-      }
-    }
-  </style>
+  <title>BoxBell</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <main class="wrap">
-    <header>
-      <div>
-        <h1>BoxBell</h1>
-        <p class="summary">Boxing round timer with bell sounds, rest intervals, notifications, and Live Activity timer display.</p>
-        <div class="meta">
-          <span class="pill">Last updated: 2026-08-04</span>
-          <span>Contact: <a href="mailto:qbeck104@gmail.com">qbeck104@gmail.com</a></span>
-        </div>
-      </div>
-      <nav aria-label="Page sections">
-        <a href="#ko">한국어</a>
-        <a href="#en">English</a>
-        <a href="#apps">Other Apps</a>
-      </nav>
-    </header>
+    <h1>BoxBell</h1>
+    <p class="sub">법적 문서 / Legal Documents</p>
 
-    <section id="ko" lang="ko">
-      <h2>이용약관 및 개인정보 처리방침</h2>
-      <p><strong>시행일 및 최종 업데이트:</strong> 2026년 8월 4일</p>
-
-      <h3>1. 서비스 개요</h3>
-      <p>BoxBell은 복싱 라운드, 휴식 시간, 벨소리, 알림, 라이브 액티비티 표시를 제공하는 iOS 타이머 앱입니다. 계정 가입 없이 사용할 수 있으며, 타이머 설정과 진행 상태는 사용자의 기기에서 처리됩니다.</p>
-
-      <h3>2. 수집하는 정보</h3>
-      <p>BoxBell은 앱 사용을 위해 이름, 이메일, 위치, 연락처, 사진, 마이크 입력 등의 개인정보를 요구하지 않습니다. 사용자가 문의를 위해 직접 이메일을 보내는 경우, 해당 이메일 주소와 문의 내용은 답변을 위해서만 사용됩니다.</p>
-
-      <h3>3. 권한 및 기기 기능</h3>
-      <ul>
-        <li>알림 권한: 백그라운드나 잠금 화면에서 라운드 종료, 휴식 종료, 30초 경고를 알려주기 위해 사용할 수 있습니다.</li>
-        <li>라이브 액티비티 및 위젯: 현재 라운드와 남은 시간을 잠금 화면 또는 다이내믹 아일랜드에 표시하기 위해 사용할 수 있습니다.</li>
-        <li>오디오 재생: 앱에 포함된 벨소리를 재생하기 위해 사용됩니다.</li>
-      </ul>
-
-      <h3>4. 정보 이용 및 공유</h3>
-      <p>문의 이메일을 제외한 개인정보를 서버로 수집하거나 판매하지 않습니다. 법령상 필요한 경우를 제외하고 사용자의 정보를 제3자에게 제공하지 않습니다.</p>
-
-      <h3>5. 데이터 보관 및 삭제</h3>
-      <p>앱의 타이머 설정은 기기에 저장됩니다. 사용자는 앱 삭제 또는 기기 설정 초기화를 통해 로컬 데이터를 삭제할 수 있습니다. 이메일 문의 기록 삭제를 원하면 아래 연락처로 요청할 수 있습니다.</p>
-
-      <h3>6. 이용 조건</h3>
-      <p>BoxBell은 운동 보조용 타이머입니다. 사용자는 자신의 건강 상태와 운동 환경을 직접 판단해야 하며, 앱의 알림이나 벨소리만을 안전 관리 수단으로 의존해서는 안 됩니다.</p>
-
-      <h3>7. 변경</h3>
-      <p>정책 또는 약관이 변경될 경우 이 페이지의 업데이트 날짜를 변경하여 고지합니다. 중요한 변경 사항은 앱 또는 웹페이지를 통해 추가로 안내할 수 있습니다.</p>
-
-      <h3>8. 문의</h3>
-      <p>문의: <a href="mailto:qbeck104@gmail.com">qbeck104@gmail.com</a></p>
+    <section id="ko">
+      <h2>한국어</h2>
+      <a class="card" href="./privacy.html">
+        <div><div class="title">개인정보 처리방침</div><div class="en">Privacy Policy</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./terms.html">
+        <div><div class="title">이용약관</div><div class="en">Terms of Service</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./support.html">
+        <div><div class="title">고객지원</div><div class="en">Support</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./licenses.html">
+        <div><div class="title">오픈소스 라이선스</div><div class="en">Open Source Licenses</div></div>
+        <span>→</span>
+      </a>
     </section>
 
-    <section id="en" lang="en">
-      <h2>Terms of Use & Privacy Policy</h2>
-      <p><strong>Effective and last updated:</strong> August 4, 2026</p>
-
-      <h3>1. Service Overview</h3>
-      <p>BoxBell is an iOS timer app for boxing rounds, rest intervals, bell sounds, notifications, and Live Activity timer display. The app does not require account registration, and timer settings and status are handled on the user's device.</p>
-
-      <h3>2. Information We Collect</h3>
-      <p>BoxBell does not require personal information such as your name, email address, location, contacts, photos, or microphone input to use the app. If you contact us by email, your email address and message are used only to respond to your inquiry.</p>
-
-      <h3>3. Permissions and Device Features</h3>
-      <ul>
-        <li>Notifications: Used to alert you about round endings, rest endings, and 30-second warnings while the app is in the background or on the lock screen.</li>
-        <li>Live Activities and widgets: Used to show the current round and remaining time on the lock screen or Dynamic Island.</li>
-        <li>Audio playback: Used to play bell sounds bundled with the app.</li>
-      </ul>
-
-      <h3>4. Use and Sharing of Information</h3>
-      <p>Except for support emails that you voluntarily send, BoxBell does not collect personal information on a server or sell user data. We do not share your information with third parties except where required by law.</p>
-
-      <h3>5. Data Retention and Deletion</h3>
-      <p>Timer settings are stored on your device. You can delete local data by deleting the app or resetting related device settings. To request deletion of support email records, contact us at the address below.</p>
-
-      <h3>6. Terms of Use</h3>
-      <p>BoxBell is a workout timer aid. You are responsible for judging your own health condition and training environment, and you should not rely solely on app alerts or bell sounds as a safety measure.</p>
-
-      <h3>7. Changes</h3>
-      <p>If these terms or policies change, we will update the date on this page. Important changes may also be announced through the app or this website.</p>
-
-      <h3>8. Contact</h3>
-      <p>Contact: <a href="mailto:qbeck104@gmail.com">qbeck104@gmail.com</a></p>
-    </section>
-
-    <section id="apps">
-      <h2>Developer's Other Apps</h2>
-      <p>More apps by Seunghwa BAEK on the App Store.</p>
-      <div class="grid">
-        <a class="app-link" href="https://apps.apple.com/kr/app/%EC%B0%A8%EA%B3%A1%EC%B0%A8%EA%B3%A1-%EC%A0%95%EB%A6%AC%EC%95%B1/id6762077357?uo=4">차곡차곡 정리앱 <span>Lifestyle</span></a>
-        <a class="app-link" href="https://apps.apple.com/kr/app/dingloop-%EB%B0%98%EB%B3%B5-%EC%95%8C%EB%9E%8C/id6775342468?uo=4">DingLoop - 반복 알람 <span>Productivity</span></a>
-        <a class="app-link" href="https://apps.apple.com/kr/app/quirkly-%EC%97%89%EB%9A%B1%ED%95%9C-%ED%95%98%EB%A3%A8-%EB%A7%8C%EB%93%A4%EA%B8%B0/id6762527265?uo=4">Quirkly - 엉뚱한 하루 만들기 <span>Lifestyle</span></a>
-        <a class="app-link" href="https://apps.apple.com/kr/app/%EB%B9%99%EA%B3%A0%EB%A7%81%EA%B3%A0-%ED%95%A8%EA%BB%98%ED%95%98%EB%8A%94-to-do/id6764120536?uo=4">빙고링고 - 함께하는 To Do <span>Entertainment</span></a>
-        <a class="app-link" href="https://apps.apple.com/kr/app/%ED%8F%AC%EC%BC%93-%EB%B3%B4%EC%9D%B4%EC%8A%A4/id6776696067?uo=4">포켓 보이스 <span>Lifestyle</span></a>
-        <a class="app-link" href="https://apps.apple.com/kr/app/dayco/id6789400504?uo=4">Dayco <span>Utilities</span></a>
-      </div>
+    <section id="en" class="language-section">
+      <h2>English</h2>
+      <a class="card" href="./en/privacy.html">
+        <div><div class="title">Privacy Policy</div><div class="en">개인정보 처리방침</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./en/terms.html">
+        <div><div class="title">Terms of Service</div><div class="en">이용약관</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./en/support.html">
+        <div><div class="title">Support</div><div class="en">고객지원</div></div>
+        <span>→</span>
+      </a>
+      <a class="card" href="./en/licenses.html">
+        <div><div class="title">Open Source Licenses</div><div class="en">오픈소스 라이선스</div></div>
+        <span>→</span>
+      </a>
     </section>
 
     <footer>
-      <p>© 2026 BoxBell. All rights reserved.</p>
+      © 2026 BoxBell. All rights reserved.<br>
+      <a href="mailto:yogotgam@gmail.com">yogotgam@gmail.com</a>
     </footer>
   </main>
 </body>
