@@ -3,58 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BoxBell</title>
-  <link rel="stylesheet" href="./styles.css">
+  <title>BoxBell Policies</title>
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#111;color:#f7f7f7;line-height:1.6}
+    main{max-width:860px;margin:0 auto;padding:56px 22px}
+    h1{font-size:42px;margin:0 0 8px} h2{margin-top:40px;color:#ff4a3d}
+    a{color:#ff6a5f;text-decoration:none}.grid{display:grid;gap:12px;margin-top:28px}
+    .card{display:block;border:1px solid #333;border-radius:8px;padding:18px;background:#191919}
+    .muted{color:#aaa}.lang{margin-top:42px;border-top:1px solid #333;padding-top:28px}
+  </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>BoxBell</h1>
-    <p class="sub">법적 문서 / Legal Documents</p>
-
-    <section id="ko">
-      <h2>한국어</h2>
-      <a class="card" href="./privacy.html">
-        <div><div class="title">개인정보 처리방침</div><div class="en">Privacy Policy</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./terms.html">
-        <div><div class="title">이용약관</div><div class="en">Terms of Service</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./support.html">
-        <div><div class="title">고객지원</div><div class="en">Support</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./licenses.html">
-        <div><div class="title">오픈소스 라이선스</div><div class="en">Open Source Licenses</div></div>
-        <span>→</span>
-      </a>
-    </section>
-
-    <section id="en" class="language-section">
-      <h2>English</h2>
-      <a class="card" href="./en/privacy.html">
-        <div><div class="title">Privacy Policy</div><div class="en">개인정보 처리방침</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./en/terms.html">
-        <div><div class="title">Terms of Service</div><div class="en">이용약관</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./en/support.html">
-        <div><div class="title">Support</div><div class="en">고객지원</div></div>
-        <span>→</span>
-      </a>
-      <a class="card" href="./en/licenses.html">
-        <div><div class="title">Open Source Licenses</div><div class="en">오픈소스 라이선스</div></div>
-        <span>→</span>
-      </a>
-    </section>
-
-    <footer>
-      © 2026 BoxBell. All rights reserved.<br>
-      <a href="mailto:yogotgam@gmail.com">yogotgam@gmail.com</a>
-    </footer>
-  </main>
+<main>
+  <h1>BoxBell</h1>
+  <p class="muted">복싱 라운드 타이머를 위한 정책 및 지원 페이지입니다.</p>
+  <div class="grid">
+    <a class="card" href="privacy.html">개인정보 처리방침 / Privacy Policy</a>
+    <a class="card" href="terms.html">이용약관 / Terms of Use</a>
+    <a class="card" href="support.html">고객지원 / Support</a>
+    <a class="card" href="licenses.html">오픈소스 라이선스 / Open Source Licenses</a>
+  </div>
+  <section class="lang">
+    <h2>English</h2>
+    <p class="muted">Policy and support pages for the BoxBell boxing round timer app.</p>
+  </section>
+</main>
 </body>
 </html>
