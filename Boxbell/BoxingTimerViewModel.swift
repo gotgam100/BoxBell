@@ -45,6 +45,7 @@ final class BoxingTimerViewModel: ObservableObject {
     private let soundPlayer = BellSoundPlayer()
     private let backgroundAlarmScheduler = BoxbellAlarmScheduler()
     private var sessionID = UUID().uuidString
+    private var canPlayInAppSounds = true
 
     init() {
         backgroundAlarmScheduler.cancelScheduledAlarms()
@@ -85,6 +86,8 @@ final class BoxingTimerViewModel: ObservableObject {
     }
 
     func start() {
+        canPlayInAppSounds = true
+
         if phase == .ready {
             backgroundAlarmScheduler.cancelScheduledAlarms()
             sessionID = UUID().uuidString
@@ -111,6 +114,7 @@ final class BoxingTimerViewModel: ObservableObject {
     func reset() {
         stopInAppTimer()
         backgroundAlarmScheduler.cancelScheduledAlarms()
+        canPlayInAppSounds = true
         sessionID = UUID().uuidString
         phase = .ready
         currentRound = 1
@@ -125,6 +129,7 @@ final class BoxingTimerViewModel: ObservableObject {
     func scheduleBackgroundAlarms(languageCode: String) {
         guard isRunning else { return }
 
+        canPlayInAppSounds = false
         refreshFromClock(playSounds: false)
         guard phase == .round || phase == .rest else { return }
 
@@ -144,6 +149,7 @@ final class BoxingTimerViewModel: ObservableObject {
     func cancelBackgroundAlarmsAndRefresh() {
         backgroundAlarmScheduler.cancelScheduledAlarms()
         refreshFromClock(playSounds: false)
+        canPlayInAppSounds = true
     }
 
     private func stopInAppTimer() {
@@ -187,7 +193,7 @@ final class BoxingTimerViewModel: ObservableObject {
     private func tick() {
         guard isRunning else { return }
 
-        refreshFromClock(playSounds: true)
+        refreshFromClock(playSounds: canPlayInAppSounds)
     }
 
     private func advancePhase(playSound: Bool) {

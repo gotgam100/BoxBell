@@ -19,10 +19,11 @@ final class BellSoundPlayer {
 
     private var players: [Bell: AVAudioPlayer] = [:]
     private let audioQueue = DispatchQueue(label: "com.baekmac.boxbell.audio")
+    private var deactivateWorkItem: DispatchWorkItem?
 
     init() {
         audioQueue.async { [weak self] in
-            self?.prepareAudioSession()
+            self?.configurePassiveAudioSession()
             self?.preparePlayer(for: .startEnd)
             self?.preparePlayer(for: .thirtySeconds)
         }
@@ -33,8 +34,10 @@ final class BellSoundPlayer {
             guard let self else { return }
 
             if let player = players[bell] {
+                configureAndActivateAudioSession()
                 player.currentTime = 0
                 player.play()
+                scheduleAudioSessionDeactivation(after: player.duration)
             } else {
                 AudioServicesPlaySystemSound(1057)
             }
@@ -43,13 +46,45 @@ final class BellSoundPlayer {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
-    private func prepareAudioSession() {
+    private func configureAndActivateAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers]
+            )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             return
         }
+    }
+
+    private func configurePassiveAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers]
+            )
+        } catch {
+            return
+        }
+    }
+
+    private func scheduleAudioSessionDeactivation(after duration: TimeInterval) {
+        deactivateWorkItem?.cancel()
+
+        let workItem = DispatchWorkItem {
+            do {
+                try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+                self.configurePassiveAudioSession()
+            } catch {
+                return
+            }
+        }
+
+        deactivateWorkItem = workItem
+        audioQueue.asyncAfter(deadline: .now() + max(duration, 0.5), execute: workItem)
     }
 
     private func preparePlayer(for bell: Bell) {

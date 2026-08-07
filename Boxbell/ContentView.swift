@@ -28,18 +28,11 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                header
-                timerDial
-                digitalTimer
-                settings
-                    .padding(.top, 8)
-                guideText
-                Spacer(minLength: 0)
+            if isPad {
+                iPadContent
+            } else {
+                iPhoneContent
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 42)
-            .padding(.bottom, 24)
         }
         .sheet(isPresented: $isShowingSettings) {
             SettingsView(timer: timer, appLanguage: $appLanguage, localizer: localizer)
@@ -59,6 +52,43 @@ struct ContentView: View {
                 timer.scheduleBackgroundAlarms(languageCode: appLanguage)
             }
         }
+    }
+
+    private var isPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad ||
+            UIDevice.current.model.localizedCaseInsensitiveContains("iPad")
+    }
+
+    private var iPhoneContent: some View {
+        VStack(spacing: 18) {
+            header
+            timerDial
+            digitalTimer
+            settings
+                .padding(.top, 8)
+            guideText
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 42)
+        .padding(.bottom, 24)
+    }
+
+    private var iPadContent: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 8) {
+                header
+                timerDial(dialSize: 214, bellSize: 196, topPadding: 2)
+                digitalTimer(fontSize: 126)
+                settings(spacing: 12, padding: 14, extraTopPadding: 4, restSpacing: 8, restButtonHeight: 34)
+                guideText
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 16)
+        }
+        .scrollBounceBehavior(.basedOnSize)
     }
 
     private var header: some View {
@@ -92,6 +122,10 @@ struct ContentView: View {
     }
 
     private var timerDial: some View {
+        timerDial(dialSize: 260, bellSize: 238, topPadding: 10)
+    }
+
+    private func timerDial(dialSize: CGFloat, bellSize: CGFloat, topPadding: CGFloat) -> some View {
         ZStack {
             Circle()
                 .inset(by: 6)
@@ -100,7 +134,7 @@ struct ContentView: View {
             Image("TimeBell")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 238, height: 238)
+                .frame(width: bellSize, height: bellSize)
                 .offset(y: 1)
                 .scaleEffect(isBellPressed ? 0.93 : 1)
                 .animation(.spring(response: 0.14, dampingFraction: 0.58), value: isBellPressed)
@@ -134,14 +168,18 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: 0.25), value: timer.progress)
                 .allowsHitTesting(false)
         }
-        .frame(width: 260, height: 260)
+        .frame(width: dialSize, height: dialSize)
         .frame(maxWidth: .infinity)
-        .padding(.top, 10)
+        .padding(.top, topPadding)
     }
 
     private var digitalTimer: some View {
+        digitalTimer(fontSize: 180)
+    }
+
+    private func digitalTimer(fontSize: CGFloat) -> some View {
         Text(timer.timeText)
-            .font(.custom("DS-Digital-Bold", size: 180))
+            .font(.custom("DS-Digital-Bold", size: fontSize))
             .monospacedDigit()
             .minimumScaleFactor(0.62)
             .foregroundStyle(digitalTimerColor)
@@ -175,7 +213,17 @@ struct ContentView: View {
     }
 
     private var settings: some View {
-        VStack(spacing: 18) {
+        settings(spacing: 18, padding: 18, extraTopPadding: 10, restSpacing: 10, restButtonHeight: 36)
+    }
+
+    private func settings(
+        spacing: CGFloat,
+        padding: CGFloat,
+        extraTopPadding: CGFloat,
+        restSpacing: CGFloat,
+        restButtonHeight: CGFloat
+    ) -> some View {
+        VStack(spacing: spacing) {
             HStack {
                 Text(localizer.text("setting.rounds"))
                     .font(.system(size: 17, weight: .bold, design: .rounded))
@@ -207,21 +255,21 @@ struct ContentView: View {
             }
             .opacity(timer.canEditTimerSettings ? 1 : 0.48)
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: restSpacing) {
                 Text(localizer.text("setting.rest.time"))
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.82))
 
                 HStack(spacing: 10) {
                     ForEach(timer.restOptions, id: \.self) { seconds in
-                        restOptionButton(seconds)
+                        restOptionButton(seconds, height: restButtonHeight)
                     }
                 }
             }
             .opacity(timer.canEditTimerSettings ? 1 : 0.48)
         }
-        .padding(18)
-        .padding(.top, 10)
+        .padding(padding)
+        .padding(.top, extraTopPadding)
         .background(.white.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
@@ -238,6 +286,10 @@ struct ContentView: View {
     }
 
     private func restOptionButton(_ seconds: Int) -> some View {
+        restOptionButton(seconds, height: 36)
+    }
+
+    private func restOptionButton(_ seconds: Int, height: CGFloat) -> some View {
         let isSelected = timer.restSeconds == seconds
 
         return Button {
@@ -250,7 +302,7 @@ struct ContentView: View {
                 .minimumScaleFactor(0.9)
                 .foregroundStyle(isSelected ? .black : .white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 36)
+                .frame(height: height)
                 .background(isSelected ? .white : .white.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }

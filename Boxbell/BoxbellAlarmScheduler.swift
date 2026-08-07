@@ -1,4 +1,3 @@
-import AlarmKit
 import Foundation
 import UserNotifications
 
@@ -219,11 +218,6 @@ final class BoxbellAlarmScheduler {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ids)
         center.removeDeliveredNotifications(withIdentifiers: ids)
-
-        for id in ids.compactMap(UUID.init(uuidString:)) {
-            try? AlarmManager.shared.cancel(id: id)
-            try? AlarmManager.shared.stop(id: id)
-        }
 
         storeAlarmIDs([])
     }
