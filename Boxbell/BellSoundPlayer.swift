@@ -46,6 +46,21 @@ final class BellSoundPlayer {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
+    func deactivate() {
+        audioQueue.async { [weak self] in
+            guard let self else { return }
+            deactivateWorkItem?.cancel()
+            players.values.forEach { $0.stop() }
+
+            do {
+                try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+                configurePassiveAudioSession()
+            } catch {
+                return
+            }
+        }
+    }
+
     private func configureAndActivateAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setCategory(
@@ -62,7 +77,7 @@ final class BellSoundPlayer {
     private func configurePassiveAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setCategory(
-                .playback,
+                .ambient,
                 mode: .default,
                 options: [.mixWithOthers]
             )

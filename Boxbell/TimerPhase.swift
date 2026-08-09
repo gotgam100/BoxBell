@@ -2,6 +2,7 @@ import Foundation
 
 enum TimerPhase: String, Codable, Hashable {
     case ready
+    case preparation
     case round
     case rest
     case finished
@@ -10,6 +11,8 @@ enum TimerPhase: String, Codable, Hashable {
         switch self {
         case .ready:
             return "phase.ready"
+        case .preparation:
+            return "phase.preparation"
         case .round:
             return "phase.round"
         case .rest:

@@ -1,4 +1,5 @@
 "phase.ready" = "READY";
+"phase.preparation" = "READY";
 "phase.round" = "ROUND";
 "phase.rest" = "REST";
 "phase.finished" = "DONE";
@@ -20,6 +21,7 @@
 "settings.round.duration.3min" = "3 min";
 "settings.round.duration.2min" = "2 min";
 "settings.round.duration.custom" = "Custom";
+"settings.preparation.countdown" = "Preparation Countdown";
 "settings.app.info" = "App Info";
 "settings.version" = "Version";
 "settings.terms" = "Terms & Policies";

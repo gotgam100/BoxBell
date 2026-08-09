@@ -18,8 +18,8 @@
 		9B1000252D4A000100000001 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1000262D4A000100000001 /* Localization.swift */; };
 		9B1000272D4A000100000001 /* DS-DIGIB.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 9B1000282D4A000100000001 /* DS-DIGIB.TTF */; };
 		9B1000292D4A000100000001 /* FontRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B10002A2D4A000100000001 /* FontRegistrar.swift */; };
-		9B2000012D4A000200000001 /* BoxbellActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2000022D4A000200000001 /* BoxbellActivityAttributes.swift */; };
 		9B3000012D4B000100000001 /* BoxbellAlarmScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3000022D4B000100000001 /* BoxbellAlarmScheduler.swift */; };
+		9B4000012D58000100000001 /* TimerPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4000022D58000100000001 /* TimerPhase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,8 +37,8 @@
 		9B1000282D4A000100000001 /* DS-DIGIB.TTF */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DS-DIGIB.TTF"; sourceTree = "<group>"; };
 		9B10002A2D4A000100000001 /* FontRegistrar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontRegistrar.swift; sourceTree = "<group>"; };
 		9B10002B2D4A000100000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B2000022D4A000200000001 /* BoxbellActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxbellActivityAttributes.swift; sourceTree = "<group>"; };
 		9B3000022D4B000100000001 /* BoxbellAlarmScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxbellAlarmScheduler.swift; sourceTree = "<group>"; };
+		9B4000022D58000100000001 /* TimerPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerPhase.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +66,9 @@
 				9B1000022D4A000100000001 /* BoxbellApp.swift */,
 				9B1000042D4A000100000001 /* ContentView.swift */,
 				9B1000062D4A000100000001 /* BoxingTimerViewModel.swift */,
+				9B4000022D58000100000001 /* TimerPhase.swift */,
 				9B3000022D4B000100000001 /* BoxbellAlarmScheduler.swift */,
 				9B1000082D4A000100000001 /* BellSoundPlayer.swift */,
-				9B2000022D4A000200000001 /* BoxbellActivityAttributes.swift */,
 				9B1000262D4A000100000001 /* Localization.swift */,
 				9B10002A2D4A000100000001 /* FontRegistrar.swift */,
 				9B10000A2D4A000100000001 /* Assets.xcassets */,
@@ -176,9 +176,9 @@
 				9B1000052D4A000100000001 /* BoxingTimerViewModel.swift in Sources */,
 				9B3000012D4B000100000001 /* BoxbellAlarmScheduler.swift in Sources */,
 				9B1000072D4A000100000001 /* BellSoundPlayer.swift in Sources */,
-				9B2000012D4A000200000001 /* BoxbellActivityAttributes.swift in Sources */,
 				9B1000252D4A000100000001 /* Localization.swift in Sources */,
 				9B1000292D4A000100000001 /* FontRegistrar.swift in Sources */,
+				9B4000012D58000100000001 /* TimerPhase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,14 +320,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = SB2Z6HL579;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Boxbell/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.baekmac.boxbell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -347,14 +347,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = SB2Z6HL579;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Boxbell/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.baekmac.boxbell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

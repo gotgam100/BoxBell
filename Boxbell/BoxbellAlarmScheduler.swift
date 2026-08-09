@@ -4,6 +4,7 @@ import UserNotifications
 struct BoxbellScheduledAlarm: Codable, Hashable {
     enum Kind: String, Codable {
         case warning
+        case roundStart
         case roundEnd
         case restEnd
         case finished
@@ -12,7 +13,7 @@ struct BoxbellScheduledAlarm: Codable, Hashable {
             switch self {
             case .warning:
                 return "bell_30_seconds.wav"
-            case .roundEnd, .restEnd, .finished:
+            case .roundStart, .roundEnd, .restEnd, .finished:
                 return "bell_start_end.wav"
             }
         }
@@ -74,7 +75,7 @@ final class BoxbellAlarmScheduler {
         restSeconds: Int,
         remainingSeconds: Int
     ) -> [BoxbellScheduledAlarm] {
-        guard phase == .round || phase == .rest else { return [] }
+        guard phase == .preparation || phase == .round || phase == .rest else { return [] }
 
         let now = Date()
         let maximumRound = isInfiniteRounds ? currentRound + maxInfiniteRoundsToSchedule - 1 : totalRounds
@@ -86,6 +87,19 @@ final class BoxbellAlarmScheduler {
 
         while activeRound <= maximumRound && events.count < 50 {
             switch activePhase {
+            case .preparation:
+                let endOffset = segmentOffset + segmentRemaining
+                events.append(
+                    BoxbellScheduledAlarm(
+                        kind: .roundStart,
+                        round: activeRound,
+                        fireDate: now.addingTimeInterval(TimeInterval(endOffset))
+                    )
+                )
+
+                activePhase = .round
+                segmentOffset = endOffset
+                segmentRemaining = roundSeconds
             case .round:
                 if segmentRemaining > 30 {
                     events.append(
@@ -180,7 +194,6 @@ final class BoxbellAlarmScheduler {
         let content = UNMutableNotificationContent()
         content.title = localizedTitle(for: event, languageCode: languageCode)
         content.sound = UNNotificationSound(named: UNNotificationSoundName(event.kind.soundName))
-        content.interruptionLevel = .timeSensitive
 
         let interval = max(1, event.fireDate.timeIntervalSinceNow)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
@@ -192,6 +205,8 @@ final class BoxbellAlarmScheduler {
             switch event.kind {
             case .warning:
                 return "Round \(event.round): 30 seconds left"
+            case .roundStart:
+                return "Round \(event.round) starts"
             case .roundEnd:
                 return "Round \(event.round) ended"
             case .restEnd:
@@ -204,6 +219,8 @@ final class BoxbellAlarmScheduler {
         switch event.kind {
         case .warning:
             return "\(event.round)라운드 30초 남음"
+        case .roundStart:
+            return "\(event.round)라운드 시작"
         case .roundEnd:
             return "\(event.round)라운드 종료"
         case .restEnd:

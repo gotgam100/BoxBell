@@ -31,11 +31,15 @@ final class BoxingTimerViewModel: ObservableObject {
     }
     @Published private(set) var roundSeconds = 180
     @Published var remainingSeconds = 180
+    @Published var preparationSeconds = 5 {
+        didSet { updateExternalTimerStateAfterSettingChange() }
+    }
     @Published var isRunning = false
     @Published var warningFlashTrigger = 0
     @Published var bellRingTrigger = 0
 
     let restOptions = [30, 60]
+    let preparationOptions = [0, 5, 10]
     let roundOptions = Array(1...12)
     let customRoundMinuteRange = 1...60
 
@@ -55,6 +59,8 @@ final class BoxingTimerViewModel: ObservableObject {
         switch phase {
         case .ready, .round:
             return roundSeconds
+        case .preparation:
+            return preparationSeconds
         case .rest:
             return restSeconds
         case .finished:
@@ -91,10 +97,15 @@ final class BoxingTimerViewModel: ObservableObject {
         if phase == .ready {
             backgroundAlarmScheduler.cancelScheduledAlarms()
             sessionID = UUID().uuidString
-            phase = .round
-            remainingSeconds = roundSeconds
+            if preparationSeconds > 0 {
+                phase = .preparation
+                remainingSeconds = preparationSeconds
+            } else {
+                phase = .round
+                remainingSeconds = roundSeconds
+                playBell(.startEnd)
+            }
             warningFiredForCurrentRound = false
-            playBell(.startEnd)
             segmentEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
         } else {
             segmentEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
@@ -130,8 +141,9 @@ final class BoxingTimerViewModel: ObservableObject {
         guard isRunning else { return }
 
         canPlayInAppSounds = false
+        soundPlayer.deactivate()
         refreshFromClock(playSounds: false)
-        guard phase == .round || phase == .rest else { return }
+        guard phase == .preparation || phase == .round || phase == .rest else { return }
 
         backgroundAlarmScheduler.scheduleSession(
             sessionID: sessionID,
@@ -150,6 +162,10 @@ final class BoxingTimerViewModel: ObservableObject {
         backgroundAlarmScheduler.cancelScheduledAlarms()
         refreshFromClock(playSounds: false)
         canPlayInAppSounds = true
+    }
+
+    func deactivateInAppAudio() {
+        soundPlayer.deactivate()
     }
 
     private func stopInAppTimer() {
@@ -199,10 +215,26 @@ final class BoxingTimerViewModel: ObservableObject {
     private func advancePhase(playSound: Bool) {
         switch phase {
         case .ready:
+            if preparationSeconds > 0 {
+                phase = .preparation
+                remainingSeconds = preparationSeconds
+            } else {
+                phase = .round
+                remainingSeconds = roundSeconds
+                if playSound {
+                    playBell(.startEnd)
+                }
+            }
+            warningFiredForCurrentRound = false
+            segmentEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+        case .preparation:
             phase = .round
             remainingSeconds = roundSeconds
             warningFiredForCurrentRound = false
             segmentEndDate = Date().addingTimeInterval(TimeInterval(remainingSeconds))
+            if playSound {
+                playBell(.startEnd)
+            }
         case .round:
             if !isInfiniteRounds && currentRound >= totalRounds {
                 stopInAppTimer()

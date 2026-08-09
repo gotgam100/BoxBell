@@ -48,8 +48,11 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 timer.cancelBackgroundAlarmsAndRefresh()
-            } else if timer.isRunning {
-                timer.scheduleBackgroundAlarms(languageCode: appLanguage)
+            } else {
+                timer.deactivateInAppAudio()
+                if timer.isRunning {
+                    timer.scheduleBackgroundAlarms(languageCode: appLanguage)
+                }
             }
         }
     }
@@ -151,6 +154,15 @@ struct ContentView: View {
                         }
                 )
             .accessibilityLabel(localizer.text("button.start"))
+
+            if timer.phase == .preparation {
+                Text(preparationOverlayText)
+                    .font(.system(size: max(48, dialSize * 0.28), weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.65), radius: 8, x: 0, y: 3)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
 
             Circle()
                 .inset(by: 1)
@@ -322,7 +334,7 @@ struct ContentView: View {
         switch timer.phase {
         case .ready, .finished:
             return 0
-        case .round, .rest:
+        case .preparation, .round, .rest:
             return timer.currentRound
         }
     }
@@ -335,7 +347,15 @@ struct ContentView: View {
         return localizer.text(timer.phase.titleKey)
     }
 
+    private var preparationOverlayText: String {
+        appLanguage == AppLanguage.english.rawValue ? "READY" : "준 비"
+    }
+
     private var timerRingColor: Color {
+        if timer.phase == .preparation {
+            return .white
+        }
+
         if timer.phase == .rest {
             return .green
         }
@@ -344,6 +364,10 @@ struct ContentView: View {
     }
 
     private var digitalTimerColor: Color {
+        if timer.phase == .preparation {
+            return .white
+        }
+
         if timer.phase == .rest {
             return .green
         }
@@ -423,6 +447,16 @@ struct SettingsView: View {
                     }
                 }
 
+                Section(localizer.text("settings.preparation.countdown")) {
+                    Picker(localizer.text("settings.preparation.countdown"), selection: $timer.preparationSeconds) {
+                        ForEach(timer.preparationOptions, id: \.self) { seconds in
+                            Text(localizer.format("seconds.format", seconds)).tag(seconds)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(isRoundDurationLocked)
+                }
+
                 Section(localizer.text("settings.app.info")) {
                     HStack {
                         Text(localizer.text("settings.version"))
@@ -452,9 +486,7 @@ struct SettingsView: View {
     }
 
     private var appVersionText: String {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "\(version) (\(build))"
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "2.0"
     }
 
     private var isRoundDurationLocked: Bool {
