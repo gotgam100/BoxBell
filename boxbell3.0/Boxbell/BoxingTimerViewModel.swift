@@ -26,6 +26,7 @@ final class BoxingTimerViewModel: ObservableObject {
     }
     @Published private(set) var restSeconds = 60
     @Published private(set) var selectedMode: TimerModeSlot
+    @Published private(set) var modeNames: [TimerModeSlot: String]
     @Published var roundDurationMode: RoundDurationMode = .threeMinutes {
         didSet { applyRoundDurationMode() }
     }
@@ -46,6 +47,7 @@ final class BoxingTimerViewModel: ObservableObject {
     let customRoundMinuteRange = 1...60
     let customRestSecondRange = 10...600
     let customRestSecondStep = 10
+    let maxModeNameLength = 20
 
     private var timer: Timer?
     private var segmentEndDate: Date?
@@ -62,6 +64,7 @@ final class BoxingTimerViewModel: ObservableObject {
     init() {
         modeSettings = modeStore.loadSettings()
         selectedMode = modeStore.loadSelectedMode()
+        modeNames = modeStore.loadNames()
         backgroundAlarmScheduler.cancelScheduledAlarms()
         applyModeSettings(modeSettings[selectedMode] ?? selectedMode.defaultSettings)
     }
@@ -243,6 +246,39 @@ final class BoxingTimerViewModel: ObservableObject {
     func setPreparationSeconds(_ seconds: Int) {
         guard canEditTimerSettings, preparationOptions.contains(seconds) else { return }
         preparationSeconds = seconds
+    }
+
+    func displayName(for mode: TimerModeSlot) -> String {
+        modeNames[mode] ?? mode.symbol
+    }
+
+    // 빈 이름을 저장하면 기본 이름(A, B, C)으로 돌아간다.
+    func renameMode(_ mode: TimerModeSlot, to name: String) {
+        let trimmedName = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(maxModeNameLength))
+
+        if trimmedName.isEmpty || trimmedName == mode.symbol {
+            modeNames[mode] = nil
+        } else {
+            modeNames[mode] = trimmedName
+        }
+        modeStore.saveNames(modeNames)
+    }
+
+    // 모든 모드의 이름과 설정을 앱을 처음 설치했을 때의 상태로 되돌린다.
+    func resetAllModes() {
+        guard canEditTimerSettings else { return }
+
+        modeNames = [:]
+        modeStore.saveNames(modeNames)
+
+        for mode in TimerModeSlot.allCases {
+            modeSettings[mode] = mode.defaultSettings
+        }
+        modeStore.saveSettings(modeSettings)
+
+        selectedMode = .a
+        modeStore.saveSelectedMode(.a)
+        applyModeSettings(TimerModeSlot.a.defaultSettings)
     }
 
     func selectMode(_ mode: TimerModeSlot) {

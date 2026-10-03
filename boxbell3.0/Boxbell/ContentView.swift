@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isBellPressed = false
     @State private var didHandleBellTouch = false
     @State private var digitalShakeOffset: CGFloat = 0
+    @State private var availableHeight: CGFloat = 0
 
     private var localizer: Localizer {
         Localizer(languageCode: appLanguage)
@@ -32,6 +33,16 @@ struct ContentView: View {
                 iPadContent
             } else {
                 iPhoneContent
+            }
+        }
+        // 화면을 감싸지 않고 배경에서 높이만 재서, 레이아웃 선택에 사용한다.
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { availableHeight = proxy.size.height }
+                    .onChange(of: proxy.size.height) { _, newHeight in
+                        availableHeight = newHeight
+                    }
             }
         }
         .sheet(isPresented: $isShowingSettings) {
@@ -81,8 +92,21 @@ struct ContentView: View {
             UIDevice.current.model.localizedCaseInsensitiveContains("iPad")
     }
 
+    // 화면 높이가 낮은 iPhone(SE 등)에서는 벨과 숫자를 줄인 압축 레이아웃을 쓴다.
+    @ViewBuilder
     private var iPhoneContent: some View {
-        VStack(spacing: 18) {
+        if availableHeight > 0 && availableHeight < compactLayoutHeightThreshold {
+            iPhoneCompactContent
+        } else {
+            iPhoneRegularContent
+        }
+    }
+
+    // iPhone 13 mini(안전 영역 제외 약 728pt)는 기본 레이아웃, SE(약 647pt)는 압축 레이아웃이 되도록 정한 기준.
+    private let compactLayoutHeightThreshold: CGFloat = 700
+
+    private var iPhoneRegularContent: some View {
+        VStack(spacing: 16) {
             header
             timerDial
             digitalTimer
@@ -94,6 +118,22 @@ struct ContentView: View {
         .padding(.horizontal, 24)
         .padding(.top, 42)
         .padding(.bottom, 24)
+    }
+
+    private var iPhoneCompactContent: some View {
+        VStack(spacing: 10) {
+            header
+            timerDial(dialSize: 196, bellSize: 180, topPadding: 0)
+            digitalTimer(fontSize: 112)
+                .padding(.top, -8)
+            settings(spacing: 8, padding: 12, dialSize: 60)
+            guideText
+                .padding(.top, 4)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
     }
 
     private var iPadContent: some View {
@@ -137,9 +177,17 @@ struct ContentView: View {
                 .accessibilityLabel(localizer.text("settings.title"))
             }
 
-            Text(roundCounterText)
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.72))
+            HStack(spacing: 8) {
+                Text(roundCounterText)
+                    .foregroundStyle(.white.opacity(0.72))
+
+                // 휴식 중에는 라운드 표시 옆에 휴식 상태를 휴식 색(초록)으로 보여 준다.
+                if timer.phase == .rest {
+                    Text(localizer.text("status.resting"))
+                        .foregroundStyle(.green)
+                }
+            }
+            .font(.system(size: 18, weight: .semibold, design: .rounded))
         }
     }
 
@@ -266,6 +314,7 @@ struct ContentView: View {
                     caption: localizer.text("dial.rounds"),
                     size: dialSize,
                     valueText: roundCountDialText,
+                    accessibilityValueText: roundCountDialText,
                     onChange: timer.setRoundCountValue
                 )
                 .frame(maxWidth: .infinity)
@@ -276,7 +325,8 @@ struct ContentView: View {
                     title: localizer.text("settings.round.duration"),
                     caption: localizer.text("dial.round.duration"),
                     size: dialSize,
-                    valueText: { clockText(seconds: $0 * 60) },
+                    valueText: { "\($0)" },
+                    accessibilityValueText: { localizer.format("minutes.format", $0) },
                     onChange: timer.setRoundMinutes
                 )
                 .frame(maxWidth: .infinity)
@@ -287,7 +337,8 @@ struct ContentView: View {
                     title: localizer.text("settings.rest.duration"),
                     caption: localizer.text("dial.rest"),
                     size: dialSize,
-                    valueText: clockText(seconds:),
+                    valueText: secondsDialText,
+                    accessibilityValueText: localizer.duration,
                     onChange: timer.setRestSeconds
                 )
                 .frame(maxWidth: .infinity)
@@ -298,7 +349,8 @@ struct ContentView: View {
                     title: localizer.text("settings.preparation.countdown"),
                     caption: localizer.text("dial.preparation"),
                     size: dialSize,
-                    valueText: clockText(seconds:),
+                    valueText: secondsDialText,
+                    accessibilityValueText: { localizer.format("seconds.format", $0) },
                     onChange: timer.setPreparationSeconds
                 )
                 .frame(maxWidth: .infinity)
@@ -323,25 +375,29 @@ struct ContentView: View {
                     let isSelected = timer.selectedMode == mode
 
                     Button {
+                        guard timer.canEditTimerSettings, !isSelected else { return }
+                        UISelectionFeedbackGenerator().selectionChanged()
                         timer.selectMode(mode)
                     } label: {
-                        Text(mode.symbol)
-                            .font(.system(size: 17, weight: .black, design: .rounded))
+                        Text(timer.displayName(for: mode))
+                            .font(.system(size: 16, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .padding(.horizontal, 6)
                             .foregroundStyle(isSelected ? .black : .white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 36)
+                            .frame(height: 40)
                             .background(isSelected ? .white : .white.opacity(0.1))
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(localizer.format("mode.name", mode.symbol))
+                    .accessibilityLabel(timer.displayName(for: mode))
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }
         }
         .disabled(!timer.canEditTimerSettings)
         .opacity(timer.canEditTimerSettings ? 1 : 0.48)
-        .sensoryFeedback(.selection, trigger: timer.selectedMode)
     }
 
     private var guideText: some View {
@@ -357,12 +413,13 @@ struct ContentView: View {
         .padding(.top, -6)
     }
 
-    private func roundCountDialText(_ value: Int) -> String {
-        value >= timer.unlimitedRoundCountValue ? "∞" : "\(value)"
+    // 초 단위 값은 분 단위 값과 구분되도록 앞에 '.'을 붙인다. 예: .30
+    private func secondsDialText(_ seconds: Int) -> String {
+        ".\(seconds)"
     }
 
-    private func clockText(seconds: Int) -> String {
-        String(format: "%d:%02d", seconds / 60, seconds % 60)
+    private func roundCountDialText(_ value: Int) -> String {
+        value >= timer.unlimitedRoundCountValue ? "∞" : "\(value)"
     }
 
     private var roundCounterText: String {
@@ -455,33 +512,45 @@ struct SettingsView: View {
     let localizer: Localizer
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @State private var renamingMode: TimerModeSlot?
+    @State private var renameText = ""
+    @State private var isShowingModeResetAlert = false
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section(localizer.text("settings.language")) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                SettingsSection(title: localizer.text("settings.language")) {
                     SettingsOptionPicker(
                         selection: $appLanguage,
                         options: AppLanguage.allCases.map { ($0.rawValue, localizer.text($0.titleKey)) }
                     )
-                    .settingsOptionRow()
                 }
 
-                Section {
+                SettingsSection {
                     SettingsOptionPicker(
                         selection: Binding(
                             get: { timer.selectedMode },
                             set: { timer.selectMode($0) }
                         ),
-                        options: TimerModeSlot.allCases.map { ($0, $0.symbol) }
+                        options: TimerModeSlot.allCases.map { ($0, timer.displayName(for: $0)) },
+                        onLongPress: { mode in
+                            renameText = timer.modeNames[mode] ?? ""
+                            renamingMode = mode
+                        }
                     )
-                    .settingsOptionRow()
                     .disabled(isRoundDurationLocked)
                 } header: {
-                    Text(localizer.text("settings.mode"))
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(localizer.text("settings.mode"))
+
+                        Text(localizer.text("settings.mode.rename.hint"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
-                Section(localizer.text("setting.rounds")) {
+                SettingsSection(title: localizer.text("setting.rounds")) {
                     RoundCountBar(
                         values: timer.roundCountValues,
                         selection: timer.roundCountValue,
@@ -489,11 +558,10 @@ struct SettingsView: View {
                         valueText: roundCountSettingText(for:),
                         onChange: timer.setRoundCountValue
                     )
-                    .settingsOptionRow()
                     .disabled(isRoundDurationLocked)
                 }
 
-                Section(localizer.text("settings.round.duration")) {
+                SettingsSection(title: localizer.text("settings.round.duration")) {
                     SettingsOptionPicker(
                         selection: $timer.roundDurationMode,
                         options: [
@@ -502,7 +570,6 @@ struct SettingsView: View {
                             (.custom, localizer.text("settings.round.duration.custom"))
                         ]
                     )
-                    .settingsOptionRow()
                     .disabled(isRoundDurationLocked)
 
                     if timer.roundDurationMode == .custom {
@@ -519,7 +586,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(localizer.text("settings.rest.duration")) {
+                SettingsSection(title: localizer.text("settings.rest.duration")) {
                     SettingsOptionPicker(
                         selection: $timer.restDurationMode,
                         options: [
@@ -528,7 +595,6 @@ struct SettingsView: View {
                             (.custom, localizer.text("settings.rest.duration.custom"))
                         ]
                     )
-                    .settingsOptionRow()
                     .disabled(isRoundDurationLocked)
 
                     if timer.restDurationMode == .custom {
@@ -546,33 +612,100 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(localizer.text("settings.preparation.countdown")) {
+                SettingsSection(title: localizer.text("settings.preparation.countdown")) {
                     SettingsOptionPicker(
                         selection: $timer.preparationSeconds,
                         options: timer.preparationOptions.map { ($0, localizer.format("seconds.format", $0)) }
                     )
-                    .settingsOptionRow()
                     .disabled(isRoundDurationLocked)
                 }
 
-                Section(localizer.text("settings.app.info")) {
-                    HStack {
-                        Text(localizer.text("settings.version"))
-                        Spacer()
-                        Text(appVersionText)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Button(localizer.text("settings.terms")) {
-                        openURL(BoxbellLink.terms)
-                    }
-
-                    Button(localizer.text("settings.more.apps")) {
-                        openURL(BoxbellLink.moreApps)
-                    }
+                Button(role: .destructive) {
+                    isShowingModeResetAlert = true
+                } label: {
+                    Text(localizer.text("settings.mode.reset"))
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                 }
+                .settingsCardRow()
+                .disabled(isRoundDurationLocked)
+                .opacity(isRoundDurationLocked ? 0.45 : 1)
+                .alert(
+                    localizer.text("settings.mode.reset.title"),
+                    isPresented: $isShowingModeResetAlert
+                ) {
+                    Button(localizer.text("button.no"), role: .cancel) {}
+                    Button(localizer.text("button.yes"), role: .destructive) {
+                        timer.resetAllModes()
+                    }
+                } message: {
+                    Text(localizer.text("settings.mode.reset.message"))
+                }
+
+                SettingsSection(title: localizer.text("settings.app.info")) {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text(localizer.text("settings.version"))
+                            Spacer()
+                            Text(appVersionText)
+                                .foregroundStyle(.secondary)
+                        }
+                        .settingsListRow()
+
+                        Divider()
+                            .padding(.leading, 16)
+
+                        Button {
+                            openURL(BoxbellLink.terms)
+                        } label: {
+                            Text(localizer.text("settings.terms"))
+                                .settingsListRow()
+                        }
+
+                        Divider()
+                            .padding(.leading, 16)
+
+                        Button {
+                            openURL(BoxbellLink.moreApps)
+                        } label: {
+                            Text(localizer.text("settings.more.apps"))
+                                .settingsListRow()
+                        }
+                    }
+                    .background(
+                        Color(.secondarySystemGroupedBackground),
+                        in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    )
+                }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle(localizer.text("settings.title"))
+            .alert(
+                localizer.text("mode.rename.title"),
+                isPresented: Binding(
+                    get: { renamingMode != nil },
+                    set: { if !$0 { renamingMode = nil } }
+                ),
+                presenting: renamingMode
+            ) { mode in
+                TextField(mode.symbol, text: $renameText)
+                    .onChange(of: renameText) { _, newValue in
+                        if newValue.count > timer.maxModeNameLength {
+                            renameText = String(newValue.prefix(timer.maxModeNameLength))
+                        }
+                    }
+                Button(localizer.text("button.cancel"), role: .cancel) {}
+                Button(localizer.text("button.save")) {
+                    timer.renameMode(mode, to: renameText)
+                }
+            } message: { mode in
+                Text(localizer.format("mode.rename.message", mode.symbol))
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(localizer.text("button.done")) {
@@ -609,6 +742,7 @@ private enum BoxbellLink {
 struct SettingsOptionPicker<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
+    var onLongPress: ((Value) -> Void)? = nil
     @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
@@ -616,27 +750,73 @@ struct SettingsOptionPicker<Value: Hashable>: View {
             ForEach(options, id: \.value) { option in
                 let isSelected = option.value == selection
 
-                Button {
-                    selection = option.value
-                } label: {
-                    Text(option.title)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
-                        .background(
-                            isSelected ? Color(red: 0.9, green: 0.02, blue: 0.015) : Color(.secondarySystemGroupedBackground),
-                            in: Capsule()
-                        )
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                // Button은 길게 누르는 동작까지 가져가므로, 길게 누르기를 먼저 확인하고 아니면 탭으로 처리한다.
+                Text(option.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .padding(.horizontal, 8)
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+                    .background(
+                        isSelected ? Color(red: 0.9, green: 0.02, blue: 0.015) : Color(.secondarySystemGroupedBackground),
+                        in: Capsule()
+                    )
+                    .contentShape(Capsule())
+                    .gesture(
+                        LongPressGesture(minimumDuration: 0.5)
+                            .onEnded { _ in
+                                guard isEnabled else { return }
+                                selection = option.value
+                                if let onLongPress {
+                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                    onLongPress(option.value)
+                                }
+                            }
+                            .exclusively(
+                                before: TapGesture()
+                                    .onEnded {
+                                        guard isEnabled else { return }
+                                        selection = option.value
+                                    }
+                            )
+                    )
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction {
+                        guard isEnabled else { return }
+                        selection = option.value
+                    }
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
         .opacity(isEnabled ? 1 : 0.45)
         .sensoryFeedback(.selection, trigger: selection)
+    }
+}
+
+// 설정 화면의 한 구역. 작은 회색 제목 아래에 내용을 세로로 놓는다.
+// 기본 Form 대신 사용해 iOS가 행 모서리를 섹션 모양으로 잘라 내지 않게 한다.
+struct SettingsSection<Header: View, Content: View>: View {
+    @ViewBuilder let content: Content
+    @ViewBuilder let header: Header
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // 제목은 위의 큰 제목 '설정'과 같은 위치에서 시작한다.
+            header
+                .font(.headline)
+                .foregroundStyle(.secondary)
+
+            content
+        }
+    }
+}
+
+extension SettingsSection where Header == Text {
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.content = content()
+        self.header = Text(title)
     }
 }
 
@@ -649,6 +829,7 @@ struct RoundCountBar: View {
     let onChange: (Int) -> Void
 
     @Environment(\.isEnabled) private var isEnabled
+    @State private var isHorizontalDrag: Bool?
 
     private let barHeight: CGFloat = 48
     private let barShape = RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -690,15 +871,21 @@ struct RoundCountBar: View {
             .clipShape(barShape)
             .animation(.snappy(duration: 0.15), value: selection)
             .contentShape(barShape)
-            .gesture(
-                DragGesture(minimumDistance: 0)
+            .onTapGesture { location in
+                select(at: location.x, width: proxy.size.width)
+            }
+            // 설정 화면 스크롤을 막지 않도록, 가로로 미는 동작일 때만 값을 바꾼다.
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 8)
                     .onChanged { gesture in
-                        guard isEnabled, proxy.size.width > 0 else { return }
-                        let fraction = min(max(gesture.location.x / proxy.size.width, 0), 1)
-                        let index = min(Int(fraction * CGFloat(values.count)), values.count - 1)
-                        if values[index] != selection {
-                            onChange(values[index])
+                        if isHorizontalDrag == nil {
+                            isHorizontalDrag = abs(gesture.translation.width) > abs(gesture.translation.height)
                         }
+                        guard isHorizontalDrag == true else { return }
+                        select(at: gesture.location.x, width: proxy.size.width)
+                    }
+                    .onEnded { _ in
+                        isHorizontalDrag = nil
                     }
             )
         }
@@ -708,20 +895,33 @@ struct RoundCountBar: View {
         .accessibilityLabel(title)
         .accessibilityValue(valueText(selection))
         .accessibilityAdjustableAction { direction in
+            guard isEnabled else { return }
             let offset = direction == .increment ? 1 : -1
             let index = min(max(selectedIndex + offset, 0), values.count - 1)
+            onChange(values[index])
+        }
+    }
+
+    private func select(at x: CGFloat, width: CGFloat) {
+        guard isEnabled, width > 0, !values.isEmpty else { return }
+
+        let fraction = min(max(x / width, 0), 1)
+        let index = min(Int(fraction * CGFloat(values.count)), values.count - 1)
+        if values[index] != selection {
             onChange(values[index])
         }
     }
 }
 
 private extension View {
-    func settingsOptionRow() -> some View {
-        listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
+    // 카드 안에 여러 줄로 놓이는 설정 행.
+    func settingsListRow() -> some View {
+        frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+            .padding(.horizontal, 16)
+            .contentShape(Rectangle())
     }
 
-    // 기본 행 배경 대신 모서리가 둥근 네모 카드 배경을 사용한다.
+    // 모서리가 둥근 네모 카드 배경의 설정 행.
     func settingsCardRow() -> some View {
         padding(.horizontal, 16)
             .frame(minHeight: 48)
@@ -729,13 +929,11 @@ private extension View {
                 Color(.secondarySystemGroupedBackground),
                 in: RoundedRectangle(cornerRadius: 12, style: .continuous)
             )
-            .padding(.top, 8)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets())
     }
 }
 
-// 원형 버튼을 위아래로 밀어서 휠 피커처럼 값을 바꾼다. 위로 밀면 다음 값, 아래로 밀면 이전 값.
+// 원형 버튼을 위아래로 밀어서 휠 피커처럼 값을 바꾼다.
+// 위에 큰 값, 아래에 작은 값이 보이며, 아래로 내리면 위의 큰 값이 내려오고 위로 올리면 작은 값이 올라온다.
 struct WheelDialButton: View {
     let values: [Int]
     let selection: Int
@@ -743,10 +941,12 @@ struct WheelDialButton: View {
     let caption: String
     let size: CGFloat
     let valueText: (Int) -> String
+    let accessibilityValueText: (Int) -> String
     let onChange: (Int) -> Void
 
     @Environment(\.isEnabled) private var isEnabled
     @State private var dragStartIndex: Int?
+    @State private var isValueIncreasing = true
 
     private let stepHeight: CGFloat = 14
 
@@ -770,12 +970,12 @@ struct WheelDialButton: View {
                     neighborText(at: selectedIndex + 1)
 
                     Text(valueText(selection))
-                        .font(.system(size: size * 0.29, weight: .black, design: .rounded))
+                        .font(.system(size: size * 0.4, weight: .black, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
-                        .contentTransition(.numericText())
+                        .contentTransition(.numericText(countsDown: isValueIncreasing))
 
                     neighborText(at: selectedIndex - 1)
                 }
@@ -794,10 +994,13 @@ struct WheelDialButton: View {
                 .minimumScaleFactor(0.75)
                 .frame(height: 14)
         }
-        .sensoryFeedback(.selection, trigger: selection)
+        // 설정 화면에서 값이 바뀔 때는 진동하지 않고, 이 버튼을 직접 밀 때만 진동한다.
+        .sensoryFeedback(.impact(weight: .medium, intensity: 1.0), trigger: selection) { _, _ in
+            dragStartIndex != nil
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
-        .accessibilityValue(valueText(selection))
+        .accessibilityValue(accessibilityValueText(selection))
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment:
@@ -813,7 +1016,7 @@ struct WheelDialButton: View {
     @ViewBuilder
     private func neighborText(at index: Int) -> some View {
         Text(values.indices.contains(index) ? valueText(values[index]) : " ")
-            .font(.system(size: size * 0.15, weight: .bold, design: .rounded))
+            .font(.system(size: size * 0.12, weight: .bold, design: .rounded))
             .monospacedDigit()
             .foregroundStyle(.white.opacity(0.3))
             .lineLimit(1)
@@ -827,7 +1030,7 @@ struct WheelDialButton: View {
 
                 let startIndex = dragStartIndex ?? selectedIndex
                 dragStartIndex = startIndex
-                let steps = Int((-gesture.translation.height / stepHeight).rounded())
+                let steps = Int((gesture.translation.height / stepHeight).rounded())
                 select(index: startIndex + steps)
             }
             .onEnded { _ in
@@ -838,6 +1041,8 @@ struct WheelDialButton: View {
     private func select(index: Int) {
         let clampedIndex = min(max(index, 0), values.count - 1)
         guard values[clampedIndex] != selection else { return }
+        // 값을 바꾸기 전에 방향을 정해 두어야 숫자 애니메이션이 첫 변경부터 올바른 방향으로 움직인다.
+        isValueIncreasing = values[clampedIndex] > selection
         onChange(values[clampedIndex])
     }
 }

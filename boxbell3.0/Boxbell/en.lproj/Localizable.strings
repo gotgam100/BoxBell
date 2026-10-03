@@ -11,8 +11,6 @@
 "round.option" = "%d rounds";
 "button.start" = "Start";
 "button.done" = "Done";
-"setting.rest" = "Rest";
-"setting.rest.time" = "Rest Time";
 "setting.rounds" = "Rounds";
 "seconds.format" = "%d sec";
 "settings.title" = "Settings";
@@ -29,7 +27,6 @@
 "minutes.format" = "%d min";
 "guide.start" = "1. Tap the bell to start the round.";
 "guide.settings.locked" = "2. Swipe the circles up or down to set values.";
-"mode.name" = "Mode %@";
 "settings.mode" = "Mode";
 "settings.rest.duration" = "Rest Duration";
 "settings.rest.duration.custom" = "Custom";
@@ -39,3 +36,14 @@
 "dial.round.duration" = "Round Time";
 "dial.rest" = "Rest";
 "dial.preparation" = "Countdown";
+"mode.rename.title" = "Rename Mode";
+"mode.rename.message" = "Leave it empty to restore the default name (%@).";
+"button.cancel" = "Cancel";
+"button.save" = "Save";
+"settings.mode.rename.hint" = "Press and hold to rename";
+"settings.mode.reset" = "Reset Modes";
+"settings.mode.reset.title" = "Reset all modes?";
+"settings.mode.reset.message" = "All mode names and settings will return to their original defaults.";
+"button.yes" = "Yes";
+"button.no" = "No";
+"status.resting" = "Resting";

@@ -11,8 +11,6 @@
 "round.option" = "%d라운드";
 "button.start" = "시작";
 "button.done" = "완료";
-"setting.rest" = "휴식";
-"setting.rest.time" = "휴식 시간";
 "setting.rounds" = "라운드 설정";
 "seconds.format" = "%d초";
 "settings.title" = "설정";
@@ -29,8 +27,7 @@
 "minutes.format" = "%d분";
 "guide.start" = "1. 벨을 눌러서 라운드를 시작하세요.";
 "guide.settings.locked" = "2. 원형 버튼을 위아래로 밀어 값을 설정하세요.";
-"mode.name" = "모드 %@";
-"settings.mode" = "모드 선택";
+"settings.mode" = "모드";
 "settings.rest.duration" = "휴식 시간 설정";
 "settings.rest.duration.custom" = "직접설정";
 "minutes.seconds.format" = "%d분 %d초";
@@ -39,3 +36,14 @@
 "dial.round.duration" = "라운드 시간";
 "dial.rest" = "휴식";
 "dial.preparation" = "카운트";
+"mode.rename.title" = "모드 이름 변경";
+"mode.rename.message" = "비워 두면 기본 이름(%@)으로 돌아갑니다.";
+"button.cancel" = "취소";
+"button.save" = "저장";
+"settings.mode.rename.hint" = "길게 눌러 이름변경";
+"settings.mode.reset" = "모드 초기화";
+"settings.mode.reset.title" = "설정된 모드를 초기화 하시겠습니까?";
+"settings.mode.reset.message" = "모든 모드의 이름과 설정이 앱을 처음 설치했을 때로 돌아갑니다.";
+"button.yes" = "예";
+"button.no" = "아니요";
+"status.resting" = "휴식중";

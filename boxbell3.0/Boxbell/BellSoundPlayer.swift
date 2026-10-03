@@ -62,20 +62,31 @@ final class BellSoundPlayer {
             guard let self else { return }
             stopScheduledBeeps()
 
-            let delays = dates.map { $0.timeIntervalSinceNow }.filter { $0 > 0.05 }
-            guard
-                let lastDelay = delays.max(),
-                let url = Bundle.main.url(forResource: Bell.countdownBeep.resourceName, withExtension: "wav")
-            else { return }
+            guard let url = Bundle.main.url(forResource: Bell.countdownBeep.resourceName, withExtension: "wav") else {
+                return
+            }
 
             configureAndActivateAudioSession()
             deactivateWorkItem?.cancel()
 
-            for delay in delays {
-                guard let player = try? AVAudioPlayer(contentsOf: url) else { continue }
+            // 플레이어를 모두 준비한 뒤 같은 기준 시각에서 한 번에 예약해야 간격이 정확히 1초로 유지된다.
+            let scheduledBeeps = dates.compactMap { date -> (player: AVAudioPlayer, date: Date)? in
+                guard let player = try? AVAudioPlayer(contentsOf: url) else { return nil }
                 player.prepareToPlay()
-                player.play(atTime: player.deviceCurrentTime + delay)
+                return (player, date)
+            }
+            guard let referencePlayer = scheduledBeeps.first?.player else { return }
+
+            let referenceDate = Date()
+            let referenceDeviceTime = referencePlayer.deviceCurrentTime
+            var lastDelay: TimeInterval = 0
+
+            for (player, date) in scheduledBeeps {
+                let delay = date.timeIntervalSince(referenceDate)
+                guard delay > 0.05 else { continue }
+                player.play(atTime: referenceDeviceTime + delay)
                 scheduledBeepPlayers.append(player)
+                lastDelay = max(lastDelay, delay)
             }
 
             scheduleAudioSessionDeactivation(after: lastDelay + 1.5)

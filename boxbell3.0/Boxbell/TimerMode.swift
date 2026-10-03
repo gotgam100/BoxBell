@@ -66,6 +66,7 @@ enum TimerModeSlot: String, CaseIterable, Identifiable, Codable {
 struct TimerModeStore {
     private let settingsKey = "timerModeSettings.v1"
     private let selectedModeKey = "selectedTimerMode"
+    private let modeNamesKey = "timerModeNames.v1"
     private let defaults = UserDefaults.standard
 
     func loadSettings() -> [TimerModeSlot: TimerModeSettings] {
@@ -94,5 +95,21 @@ struct TimerModeStore {
 
     func saveSelectedMode(_ mode: TimerModeSlot) {
         defaults.set(mode.rawValue, forKey: selectedModeKey)
+    }
+
+    func loadNames() -> [TimerModeSlot: String] {
+        let stored = defaults.dictionary(forKey: modeNamesKey) as? [String: String] ?? [:]
+        var names: [TimerModeSlot: String] = [:]
+        for mode in TimerModeSlot.allCases {
+            if let name = stored[mode.rawValue], !name.isEmpty {
+                names[mode] = name
+            }
+        }
+        return names
+    }
+
+    func saveNames(_ names: [TimerModeSlot: String]) {
+        let stored = Dictionary(uniqueKeysWithValues: names.map { ($0.key.rawValue, $0.value) })
+        defaults.set(stored, forKey: modeNamesKey)
     }
 }
